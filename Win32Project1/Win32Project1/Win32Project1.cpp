@@ -114,15 +114,7 @@ HWND AddMouse(HINSTANCE hInstance) {
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 {
 	MSG                 msg;
-	WNDCLASS            wndClass;
-	GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR           gdiplusToken;
-	WNDCLASS            sndClass;
-
-	// Initialize GDI+.
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-
+	
 	AddMouse(hInstance);
 	AddMouse(hInstance);
 	
@@ -133,17 +125,12 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 		DispatchMessage(&msg);
 	}
 
-	GdiplusShutdown(gdiplusToken);
 	return msg.wParam;
-}  // WinMain
+}
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 	WPARAM wParam, LPARAM lParam)
 {
-	HDC          hdc;
-	PAINTSTRUCT  ps;
-	bool finished = true;
-
 	switch (message)
 	{
 		
