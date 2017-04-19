@@ -2,79 +2,26 @@
 //
 
 
+
 #include "stdafx.h"
-#include "Windows.h"
-#include <objidl.h>
-#include <gdiplus.h>
-#include "Winuser.h"
 #include "atlimage.h"
 #include <vector>
+
 using namespace Gdiplus;
-#pragma comment (lib,"Gdiplus.lib")
+
 HWND                hWnd = NULL;
 HWND                hWnd2 = NULL;
 std::vector<HWND> mouses;
+int MouseCount = 0;
 
-VOID OnPaint(HDC hdc)
-{
-	POINT p;
-	GetCursorPos(&p);
-	Graphics    graphics(hdc);
-	Image image(L"cursor.ico");
-	graphics.DrawImage(&image, p.x, p.y, image.GetWidth(), image.GetHeight());
-}
-VOID Update() {
-	// Load our PNG image
-	if (hWnd == NULL)
-	{
-		MessageBeep(ERROR);
-
-	}
-	CImage img;
-	img.Load(L"cursor3.png");
-	// Get dimensions
-	int iWidth = img.GetWidth();
-	int iHeight = img.GetHeight();
-	// Make mem DC + mem  bitmap
-	HDC hdcScreen = GetDC(0);
-	HDC hDC = CreateCompatibleDC(hdcScreen);
-	HBITMAP hBmp = CreateCompatibleBitmap(hdcScreen, iWidth, iHeight);
-	HBITMAP hBmpOld = (HBITMAP)SelectObject(hDC, hBmp);
-	// Draw image to memory DC
-	img.Draw(hDC, 0, 0, iWidth, iHeight, 0, 0, iWidth, iHeight);
-
-	// Call UpdateLayeredWindow
-	BLENDFUNCTION blend = { 0 };
-	blend.BlendOp = AC_SRC_OVER;
-	blend.SourceConstantAlpha = 255;
-	blend.AlphaFormat = AC_SRC_ALPHA;
-	POINT ptPos = { 20, 20 };
-	SIZE sizeWnd = { iWidth, iHeight };
-	POINT ptSrc = { 0, 0 };
-	UpdateLayeredWindow(hWnd, hdcScreen, &ptPos, &sizeWnd, hDC, &ptSrc, 0, &blend, ULW_ALPHA);
-
-	SelectObject(hDC, hBmpOld);
-	DeleteObject(hBmp);
-	DeleteDC(hDC);
-	ReleaseDC(0, hdcScreen);
-
-
-}
-
-VOID OnPaint2(HDC hdc)
-{
-	Graphics    graphics(hdc);
-	Image image(L"cursor.png");
-	graphics.DrawImage(&image, 60, 10);
-}
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int iWidth = 0;
 int iHeight = 0;
 
-VOID op(HWND hWnd, int x, int y) {
-	SetWindowPos(hWnd, 0, x, y, iWidth, iHeight, 0);
+VOID updateCurPosition(HWND hWnd, int x, int y) {
+	SetWindowPos(hWnd, HWND_TOPMOST, x, y, iWidth, iHeight, 0);
 }
 
 HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winName)
@@ -95,9 +42,9 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	RegisterClass(&wndClass);
 
 	hWnd = CreateWindowEx(
-		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
+		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT,
 		className,   // window class name
-		TEXT("Getting Started"),  // window caption
+		winName,  // window caption
 		WS_POPUP | WS_VISIBLE | WS_SYSMENU,      // window style
 		CW_USEDEFAULT,            // initial x position
 		CW_USEDEFAULT,            // initial y position
@@ -156,8 +103,12 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	return hWnd;
 }
 
-VOID AddMouse(HWND hWnd) {
+HWND AddMouse(HINSTANCE hInstance) {
+	HWND hWnd = NULL;
+	hWnd = setCursor(hInstance, hWnd, TEXT("Mouse" + MouseCount), TEXT("Mouse" + MouseCount)); // Cia tas +MouseCount neveikia reikia pataisyt lol
 	mouses.push_back(hWnd);
+	MouseCount++;
+	return hWnd;
 }
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
@@ -171,29 +122,13 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 	// Initialize GDI+.
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-	hWnd = setCursor(hInstance, hWnd, L"yee", L"yee");
 
-	AddMouse(hWnd);
-
-	hWnd2 = setCursor(hInstance, hWnd2, L"yee2", L"yee2");
-
-	AddMouse(hWnd2);
-
-	SetWindowPos(hWnd, 0, 200, 200, iWidth, iHeight, 0);
-
-	SetWindowPos(hWnd2, 0, 200, 200, iWidth, iHeight, 0);
-	
-	//ShowWindow(hWnd, iCmdShow);
-
-	
+	AddMouse(hInstance);
+	AddMouse(hInstance);
 	
 
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
-		if (msg.message == WM_MOUSEMOVE)
-		{
-			//UpdateWindow(hWnd);
-		}
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
@@ -202,9 +137,6 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 	return msg.wParam;
 }  // WinMain
 
-
-
-MSLLHOOKSTRUCT * pMouseStruct;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 	WPARAM wParam, LPARAM lParam)
 {
@@ -235,19 +167,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
 	if (nCode >= 0) {
 		MSLLHOOKSTRUCT * pMouseStruct = (MSLLHOOKSTRUCT *)lParam;
-		;
-		//UpdateLayeredWindow(hWnd, NULL, &ptPos, NULL, NULL, &ptPos, 0, NULL, ULW_ALPHA);
-		//
 		for (size_t i = 0; i < mouses.size(); i++) {		
 			if (i == 1) {
-				op(mouses.at(i), pMouseStruct->pt.x + 100, pMouseStruct->pt.y + 100);
+				updateCurPosition(mouses.at(i), pMouseStruct->pt.x + 100, pMouseStruct->pt.y + 100);
 			}
 			else {
-				op(mouses.at(i), pMouseStruct->pt.x + 100, pMouseStruct->pt.y - 100);
+				updateCurPosition(mouses.at(i), pMouseStruct->pt.x + 100, pMouseStruct->pt.y - 100);
 			}
 		}
-		
-		//op(hWnd2, pMouseStruct->pt.x + 200, pMouseStruct->pt.y + 200);
 	}
 	
 	return CallNextHookEx(0, nCode, wParam, lParam);
