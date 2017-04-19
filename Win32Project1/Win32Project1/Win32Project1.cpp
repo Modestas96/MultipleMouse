@@ -5,31 +5,31 @@
 
 
 #include "stdafx.h"
-<<<<<<< HEAD
-=======
 #include <Windows.h>
->>>>>>> faacf1a391f460277dd8a6120bb42651a8d0390b
 #include "atlimage.h"
 #include <vector>
+#include "dataStructs.h"
+
+#include "interception.h"
+#include "utils.h"
 
 using namespace Gdiplus;
-<<<<<<< HEAD
 
-=======
->>>>>>> faacf1a391f460277dd8a6120bb42651a8d0390b
 HWND                hWnd = NULL;
 HWND                hWnd2 = NULL;
-std::vector<HWND> mouses;
+std::vector<mouseDevice> mouseDevices;
 int MouseCount = 0;
 
 
+INT WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow);
+void handleDevices(HINSTANCE);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int iWidth = 0;
 int iHeight = 0;
 
-VOID updateCurPosition(HWND hWnd, int x, int y) {
-	SetWindowPos(hWnd, HWND_TOPMOST, x, y, iWidth, iHeight, 0);
+VOID updateCurPosition(mouseDevice device) {
+	SetWindowPos(device.hWnd, HWND_TOPMOST, device.x, device.y, iWidth, iHeight, 0);
 }
 
 HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winName)
@@ -111,20 +111,26 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	return hWnd;
 }
 
-HWND AddMouse(HINSTANCE hInstance) {
+HWND AddMouse(HINSTANCE hInstance, InterceptionDevice device, int x, int y) {
 	HWND hWnd = NULL;
 	hWnd = setCursor(hInstance, hWnd, TEXT("Mouse" + MouseCount), TEXT("Mouse" + MouseCount)); // Cia tas +MouseCount neveikia reikia pataisyt lol
-	mouses.push_back(hWnd);
+	mouseDevices.push_back(mouseDevice(hWnd, device, x, y));
 	MouseCount++;
 	return hWnd;
 }
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 {
+	// CIa kad console issoktu lol1!!
+	AllocConsole();
+	freopen("CONIN$", "r", stdin);
+	freopen("CONOUT$", "w", stdout);
+	freopen("CONOUT$", "w", stderr);
+	printf("debug mode XD \n");
+	///////
 	MSG                 msg;
 	
-	AddMouse(hInstance);
-	AddMouse(hInstance);
+	handleDevices(hInstance);
 	
 
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -134,6 +140,59 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 	}
 
 	return msg.wParam;
+}
+void handleDevices(HINSTANCE hInstance) {
+	InterceptionContext context;
+	InterceptionDevice device;
+	InterceptionStroke stroke;
+
+	//raise_process_priority();
+
+	context = interception_create_context();
+
+	interception_set_filter(context, interception_is_keyboard, INTERCEPTION_FILTER_KEY_DOWN | INTERCEPTION_FILTER_KEY_UP);
+	interception_set_filter(context, interception_is_mouse, INTERCEPTION_FILTER_MOUSE_MOVE);
+
+	while (interception_receive(context, device = interception_wait(context), &stroke, 1) > 0)
+	{
+		/*if (interception_is_keyboard(device))
+		{
+			InterceptionKeyStroke &keystroke = *(InterceptionKeyStroke *)&stroke;
+
+			//	if (keystroke.code == SCANCODE_ESC) break;
+
+			interception_send(context, device, &stroke, 1);
+		}*/
+
+		if (interception_is_mouse(device))
+		{
+			InterceptionMouseStroke &mousestroke = *(InterceptionMouseStroke *)&stroke;
+
+			bool fnd = false;
+			for (int i = 0; i < mouseDevices.size(); i++) {
+				if (mouseDevices[i].name == device) {
+					fnd = true;
+					mouseDevices[i].x += mousestroke.x;
+					mouseDevices[i].y += mousestroke.y;
+
+					printf("uid: %d, x: %d, y : %d \n", i + 1, mouseDevices[i].x, mouseDevices[i].y);
+				}
+			}
+			if (!fnd) {
+				AddMouse(hInstance, device, mousestroke.x, mousestroke.y);
+			}
+			if (device != mouseDevices[0].name)
+				interception_send(context, device, &stroke, 1);
+			else
+				updateCurPosition(mouseDevices[0]);
+			//	cout << "INTERCEPTION_MOUSE(" << device  << ")" << mousestroke.x << " " << mousestroke.y << endl;
+		}
+
+	}
+
+
+	interception_destroy_context(context);
+
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
@@ -159,8 +218,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 	}
 } 
 
-LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
-	if (nCode >= 0) {
+/*LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+/*	if (nCode >= 0) {
 		MSLLHOOKSTRUCT * pMouseStruct = (MSLLHOOKSTRUCT *)lParam;
 		for (size_t i = 0; i < mouses.size(); i++) {		
 			if (i == 1) {
@@ -172,8 +231,8 @@ LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
 		}
 	}
 	
-	return CallNextHookEx(0, nCode, wParam, lParam);
-}
+	return CallNextHookEx(0, nCode, wParam, lParam);*/
+/*}
 
-HHOOK mousehook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, NULL, 0);
+/*HHOOK mousehook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, NULL, 0);*/
 
