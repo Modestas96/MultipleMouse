@@ -95,7 +95,7 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	RegisterClass(&wndClass);
 
 	hWnd = CreateWindowEx(
-		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT,
+		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
 		className,   // window class name
 		TEXT("Getting Started"),  // window caption
 		WS_POPUP | WS_VISIBLE | WS_SYSMENU,      // window style
