@@ -1,14 +1,22 @@
 // Win32Project1.cpp : Defines the entry point for the application.
 //
 
+#pragma comment (lib,"Gdiplus.lib")
 
 
 #include "stdafx.h"
+<<<<<<< HEAD
+=======
+#include <Windows.h>
+>>>>>>> faacf1a391f460277dd8a6120bb42651a8d0390b
 #include "atlimage.h"
 #include <vector>
 
 using namespace Gdiplus;
+<<<<<<< HEAD
 
+=======
+>>>>>>> faacf1a391f460277dd8a6120bb42651a8d0390b
 HWND                hWnd = NULL;
 HWND                hWnd2 = NULL;
 std::vector<HWND> mouses;
