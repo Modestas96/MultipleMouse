@@ -1,7 +1,0 @@
-﻿  Win32Project1.cpp
-c:\users\jurci\documents\visual studio 2017\projects\win32project1\win32project1\win32project1.cpp(169): warning C4101: 'sndClass': unreferenced local variable
-c:\users\jurci\documents\visual studio 2017\projects\win32project1\win32project1\win32project1.cpp(166): warning C4101: 'wndClass': unreferenced local variable
-c:\users\jurci\documents\visual studio 2017\projects\win32project1\win32project1\win32project1.cpp(211): warning C4101: 'hdc': unreferenced local variable
-c:\users\jurci\documents\visual studio 2017\projects\win32project1\win32project1\win32project1.cpp(212): warning C4101: 'ps': unreferenced local variable
-  Win32Project1.vcxproj -> C:\Users\jurci\documents\visual studio 2017\Projects\Win32Project1\Debug\Win32Project1.exe
-  Win32Project1.vcxproj -> C:\Users\jurci\documents\visual studio 2017\Projects\Win32Project1\Debug\Win32Project1.pdb (Partial PDB)
