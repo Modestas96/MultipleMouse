@@ -15,6 +15,10 @@
 
 using namespace Gdiplus;
 
+#define STATE_LEFT true;
+#define STATE_RIGHT false;
+
+
 HWND                hWnd = NULL;
 HWND                hWnd2 = NULL;
 std::vector<mouseDevice> mouseDevices;
@@ -24,6 +28,7 @@ int MouseCount = 0;
 INT WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow);
 void handleDevices(HINSTANCE);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
+void handleMouseClick(int, int, bool);
 
 int iWidth = 0;
 int iHeight = 0;
@@ -43,21 +48,26 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	wndClass.hInstance = hInstance;
 	wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
 	wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+	wndClass.hbrBackground = (HBRUSH) GetStockObject(WHITE_BRUSH);
 	wndClass.lpszMenuName = NULL;
 	wndClass.lpszClassName = className;
-
+	
 	RegisterClass(&wndClass);
+	CImage img;
+	img.Load(L"cursor3.png");
+	
+	iWidth = img.GetWidth();
+	iHeight = img.GetHeight();
 
 	hWnd = CreateWindowEx(
-		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT,
+		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
 		className,   // window class name
 		winName,  // window caption
 		WS_POPUP | WS_VISIBLE | WS_SYSMENU,      // window style
 		CW_USEDEFAULT,            // initial x position
 		CW_USEDEFAULT,            // initial y position
-		80,            // initial x size
-		80,            // initial y size
+		iWidth,            // initial x size
+		iHeight,            // initial y size
 		NULL,                     // parent window handle
 		NULL,                     // window menu handle
 		hInstance,                // program instance handle
@@ -75,12 +85,6 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	lStyle &= ~(WS_CAPTION | WS_THICKFRAME | WS_MINIMIZE | WS_MAXIMIZE | WS_SYSMENU);
 	SetWindowLong(hWnd, GWL_STYLE, lStyle);
 
-	CImage img;
-	img.Load(L"cursor3.png");
-
-	// Get dimensions of Image
-	iWidth = img.GetWidth();
-	iHeight = img.GetHeight();
 
 	// Make a memory DC + memory bitmap
 	HDC hdcScreen = GetDC(NULL);
@@ -113,7 +117,7 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 
 HWND AddMouse(HINSTANCE hInstance, InterceptionDevice device, int x, int y) {
 	HWND hWnd = NULL;
-	hWnd = setCursor(hInstance, hWnd, TEXT("Mouse" + MouseCount), TEXT("Mouse" + MouseCount)); // Cia tas +MouseCount neveikia reikia pataisyt lol
+	hWnd = setCursor(hInstance, hWnd, TEXT("Mouse"), TEXT("Mouse")); // Cia tas +MouseCount neveikia reikia pataisyt lol
 	mouseDevices.push_back(mouseDevice(hWnd, device, x, y));
 	MouseCount++;
 	return hWnd;
@@ -150,9 +154,9 @@ void handleDevices(HINSTANCE hInstance) {
 
 	context = interception_create_context();
 
-	interception_set_filter(context, interception_is_keyboard, INTERCEPTION_FILTER_KEY_DOWN | INTERCEPTION_FILTER_KEY_UP);
-	interception_set_filter(context, interception_is_mouse, INTERCEPTION_FILTER_MOUSE_MOVE);
-
+	//interception_set_filter(context, interception_is_keyboard, INTERCEPTION_FILTER_KEY_DOWN | INTERCEPTION_FILTER_KEY_UP);
+	interception_set_filter(context, interception_is_mouse, INTERCEPTION_FILTER_MOUSE_MOVE | INTERCEPTION_FILTER_MOUSE_ALL);
+	bool op = true;
 	while (interception_receive(context, device = interception_wait(context), &stroke, 1) > 0)
 	{
 		/*if (interception_is_keyboard(device))
@@ -167,19 +171,28 @@ void handleDevices(HINSTANCE hInstance) {
 		if (interception_is_mouse(device))
 		{
 			InterceptionMouseStroke &mousestroke = *(InterceptionMouseStroke *)&stroke;
-
+			
+			
 			bool fnd = false;
 			for (int i = 0; i < mouseDevices.size(); i++) {
 				if (mouseDevices[i].name == device) {
 					fnd = true;
 					mouseDevices[i].x += mousestroke.x;
 					mouseDevices[i].y += mousestroke.y;
-
+					//printf("%s",mouseDevices[i].name);
 					printf("uid: %d, x: %d, y : %d \n", i + 1, mouseDevices[i].x, mouseDevices[i].y);
+					printf("%d", mousestroke.state);
+					if (mousestroke.state == 2) { //Kairiojo klaviso atspaudimas
+						handleMouseClick(mouseDevices[i].x, mouseDevices[i].y, true);
+					}
+					if (mousestroke.state == 8) { //Desinio klaviso atspaudimas
+						handleMouseClick(mouseDevices[i].x, mouseDevices[i].y, false);
+					}
 				}
 			}
-			if (!fnd) {
+			if (!fnd && op) {
 				AddMouse(hInstance, device, mousestroke.x, mousestroke.y);
+				op = false;
 			}
 			if (device != mouseDevices[0].name)
 				interception_send(context, device, &stroke, 1);
@@ -192,6 +205,36 @@ void handleDevices(HINSTANCE hInstance) {
 
 
 	interception_destroy_context(context);
+
+}
+
+void handleMouseClick(int x, int y, bool isLeft) {
+
+	const double XSCALEFACTOR = 65535 / (GetSystemMetrics(SM_CXSCREEN) - 1);
+	const double YSCALEFACTOR = 65535 / (GetSystemMetrics(SM_CYSCREEN) - 1);
+
+	printf("HEYYY %d %d", x, y);
+	INPUT Input = { 0 };
+	Input.type = INPUT_MOUSE;
+	Input.mi.dx = x * XSCALEFACTOR;
+	Input.mi.dy = y * YSCALEFACTOR;
+
+	if (isLeft)
+	{
+		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;	
+	}else{
+		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP;
+	}
+
+	
+
+	POINT p;
+	GetCursorPos(&p);
+
+
+	SendInput(1, &Input, sizeof(INPUT));
+
+	SetCursorPos(p.x, p.y);
 
 }
 
