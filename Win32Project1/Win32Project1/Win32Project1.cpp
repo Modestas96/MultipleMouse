@@ -9,6 +9,7 @@
 #include "atlimage.h"
 #include <vector>
 #include "dataStructs.h"
+#include <iostream>
 
 #include "interception.h"
 #include "utils.h"
@@ -29,11 +30,23 @@ INT WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow);
 void handleDevices(HINSTANCE);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void handleMouseClick(int, int, bool);
+int sum(int, int);
 
 int iWidth = 0;
 int iHeight = 0;
 
+struct ts {
+	int a, b;
+};
+
+int sum(ts s) {
+	return s.a + s.b;
+}
+int sum(int a) {
+	return a + b;
+}
 VOID updateCurPosition(mouseDevice device) {
+	//printf("%s", device.name);
 	SetWindowPos(device.hWnd, HWND_TOPMOST, device.x, device.y, iWidth, iHeight, 0);
 }
 
@@ -60,7 +73,7 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	iHeight = img.GetHeight();
 
 	hWnd = CreateWindowEx(
-		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
+		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT,
 		className,   // window class name
 		winName,  // window caption
 		WS_POPUP | WS_VISIBLE | WS_SYSMENU,      // window style
@@ -157,28 +170,35 @@ void handleDevices(HINSTANCE hInstance) {
 	//interception_set_filter(context, interception_is_keyboard, INTERCEPTION_FILTER_KEY_DOWN | INTERCEPTION_FILTER_KEY_UP);
 	interception_set_filter(context, interception_is_mouse, INTERCEPTION_FILTER_MOUSE_MOVE | INTERCEPTION_FILTER_MOUSE_ALL);
 	bool op = true;
+
 	while (interception_receive(context, device = interception_wait(context), &stroke, 1) > 0)
 	{
-		/*if (interception_is_keyboard(device))
+/*		if (interception_is_keyboard(device))
 		{
 			InterceptionKeyStroke &keystroke = *(InterceptionKeyStroke *)&stroke;
 
-			//	if (keystroke.code == SCANCODE_ESC) break;
+			if (keystroke.code == ) break;
 
 			interception_send(context, device, &stroke, 1);
-		}*/
-
+		}
+*/
+		bool fnd = false;
 		if (interception_is_mouse(device))
 		{
 			InterceptionMouseStroke &mousestroke = *(InterceptionMouseStroke *)&stroke;
-			
-			
-			bool fnd = false;
+
+
+			mouseDevice now = mouseDevice();
+			now.x =123123;
+			printf("%d", mouseDevices.size());
 			for (int i = 0; i < mouseDevices.size(); i++) {
 				if (mouseDevices[i].name == device) {
 					fnd = true;
 					mouseDevices[i].x += mousestroke.x;
 					mouseDevices[i].y += mousestroke.y;
+					now = mouseDevices[i];
+
+
 					//printf("%s",mouseDevices[i].name);
 					printf("uid: %d, x: %d, y : %d \n", i + 1, mouseDevices[i].x, mouseDevices[i].y);
 					printf("%d", mousestroke.state);
@@ -190,14 +210,14 @@ void handleDevices(HINSTANCE hInstance) {
 					}
 				}
 			}
-			if (!fnd && op) {
+			if (!fnd) {
+				fnd = false;
 				AddMouse(hInstance, device, mousestroke.x, mousestroke.y);
-				op = false;
 			}
-			if (device != mouseDevices[0].name)
+			if (device == mouseDevices[0].name)
 				interception_send(context, device, &stroke, 1);
 			else
-				updateCurPosition(mouseDevices[0]);
+				updateCurPosition(now);
 			//	cout << "INTERCEPTION_MOUSE(" << device  << ")" << mousestroke.x << " " << mousestroke.y << endl;
 		}
 
@@ -213,7 +233,9 @@ void handleMouseClick(int x, int y, bool isLeft) {
 	const double XSCALEFACTOR = 65535 / (GetSystemMetrics(SM_CXSCREEN) - 1);
 	const double YSCALEFACTOR = 65535 / (GetSystemMetrics(SM_CYSCREEN) - 1);
 
-	printf("HEYYY %d %d", x, y);
+
+	printf("metrics %d", GetSystemMetrics(SM_CXSCREEN) - 1);
+	//printf("HEYYY %d %d", x, y);
 	INPUT Input = { 0 };
 	Input.type = INPUT_MOUSE;
 	Input.mi.dx = x * XSCALEFACTOR;
