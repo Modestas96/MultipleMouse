@@ -1,2 +1,14 @@
-﻿  Win32Project1.vcxproj -> C:\Users\jurci\Desktop\MultipleMouse\Win32Project1\Debug\Win32Project1.exe
+﻿  Win32Project1.cpp
+c:\users\jurci\desktop\multiplemouse\win32project1\win32project1\datastructs.h(23): warning C4091: 'typedef ': ignored on left of 'mouseDevice' when no variable is declared
+c:\users\jurci\desktop\multiplemouse\win32project1\win32project1\win32project1.cpp(29): warning C4007: 'WinMain': must be '__stdcall'
+c:\users\jurci\desktop\multiplemouse\win32project1\win32project1\win32project1.cpp(143): warning C4996: 'freopen': This function or variable may be unsafe. Consider using freopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.14393.0\ucrt\stdio.h(242): note: see declaration of 'freopen'
+c:\users\jurci\desktop\multiplemouse\win32project1\win32project1\win32project1.cpp(144): warning C4996: 'freopen': This function or variable may be unsafe. Consider using freopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.14393.0\ucrt\stdio.h(242): note: see declaration of 'freopen'
+c:\users\jurci\desktop\multiplemouse\win32project1\win32project1\win32project1.cpp(145): warning C4996: 'freopen': This function or variable may be unsafe. Consider using freopen_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.14393.0\ucrt\stdio.h(242): note: see declaration of 'freopen'
+c:\users\jurci\desktop\multiplemouse\win32project1\win32project1\win32project1.cpp(194): warning C4018: '<': signed/unsigned mismatch
+c:\users\jurci\desktop\multiplemouse\win32project1\win32project1\win32project1.cpp(251): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+c:\users\jurci\desktop\multiplemouse\win32project1\win32project1\win32project1.cpp(252): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+  Win32Project1.vcxproj -> C:\Users\jurci\Desktop\MultipleMouse\Win32Project1\Debug\Win32Project1.exe
   Win32Project1.vcxproj -> C:\Users\jurci\Desktop\MultipleMouse\Win32Project1\Debug\Win32Project1.pdb (Partial PDB)

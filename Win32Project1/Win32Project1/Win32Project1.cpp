@@ -29,7 +29,7 @@ int MouseCount = 0;
 INT WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow);
 void handleDevices(HINSTANCE);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
-void handleMouseClick(int, int, bool);
+void handleMouseEvent(int, int, short, short);
 int sum(int, int);
 
 int iWidth = 0;
@@ -43,7 +43,7 @@ int sum(ts s) {
 	return s.a + s.b;
 }
 int sum(int a) {
-	return a + b;
+	return a;
 }
 VOID updateCurPosition(mouseDevice device) {
 	//printf("%s", device.name);
@@ -189,24 +189,32 @@ void handleDevices(HINSTANCE hInstance) {
 
 
 			mouseDevice now = mouseDevice();
-			now.x =123123;
-			printf("%d", mouseDevices.size());
+			now.x = 123123;
+			//printf("%d", mouseDevices.size());
 			for (int i = 0; i < mouseDevices.size(); i++) {
+				
 				if (mouseDevices[i].name == device) {
+
 					fnd = true;
 					mouseDevices[i].x += mousestroke.x;
 					mouseDevices[i].y += mousestroke.y;
 					now = mouseDevices[i];
 
+					if (i == 0) continue;
 
-					//printf("%s",mouseDevices[i].name);
 					printf("uid: %d, x: %d, y : %d \n", i + 1, mouseDevices[i].x, mouseDevices[i].y);
-					printf("%d", mousestroke.state);
-					if (mousestroke.state == 2) { //Kairiojo klaviso atspaudimas
-						handleMouseClick(mouseDevices[i].x, mouseDevices[i].y, true);
+					printf("%d", mousestroke.rolling);
+					if (mousestroke.state == 2) {
+						handleMouseEvent(mouseDevices[i].x, mouseDevices[i].y, mousestroke.state, 0);
 					}
-					if (mousestroke.state == 8) { //Desinio klaviso atspaudimas
-						handleMouseClick(mouseDevices[i].x, mouseDevices[i].y, false);
+					if (mousestroke.state == 8) {
+						handleMouseEvent(mouseDevices[i].x, mouseDevices[i].y, mousestroke.state, 0);
+					}
+					if (mousestroke.state == 32) {
+						handleMouseEvent(mouseDevices[i].x, mouseDevices[i].y, mousestroke.state, 0);
+					}
+					if (mousestroke.state == 1024) {
+						handleMouseEvent(mouseDevices[i].x, mouseDevices[i].y, mousestroke.state, mousestroke.rolling);
 					}
 				}
 			}
@@ -214,11 +222,12 @@ void handleDevices(HINSTANCE hInstance) {
 				fnd = false;
 				AddMouse(hInstance, device, mousestroke.x, mousestroke.y);
 			}
-			if (device == mouseDevices[0].name)
-				interception_send(context, device, &stroke, 1);
-			else
+			if (device == mouseDevices[0].name) {
+				interception_send(context, device, &stroke, 2);
+			}
+			else {
 				updateCurPosition(now);
-			//	cout << "INTERCEPTION_MOUSE(" << device  << ")" << mousestroke.x << " " << mousestroke.y << endl;
+			}
 		}
 
 	}
@@ -228,25 +237,39 @@ void handleDevices(HINSTANCE hInstance) {
 
 }
 
-void handleMouseClick(int x, int y, bool isLeft) {
+void handleMouseEvent(int x, int y, short state, short rolling) {
 
 	const double XSCALEFACTOR = 65535 / (GetSystemMetrics(SM_CXSCREEN) - 1);
 	const double YSCALEFACTOR = 65535 / (GetSystemMetrics(SM_CYSCREEN) - 1);
 
 
-	printf("metrics %d", GetSystemMetrics(SM_CXSCREEN) - 1);
-	//printf("HEYYY %d %d", x, y);
+	//printf("metrics %d", GetSystemMetrics(SM_CXSCREEN) - 1);
+	printf("HEYYY %d %d", x, y);
+	printf("state %d \n", state);
 	INPUT Input = { 0 };
 	Input.type = INPUT_MOUSE;
 	Input.mi.dx = x * XSCALEFACTOR;
 	Input.mi.dy = y * YSCALEFACTOR;
 
-	if (isLeft)
+
+	if (state == 2)
 	{
-		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;	
-	}else{
+		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_LEFTUP;
+	}
+	if (state == 8)
+	{
 		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_RIGHTDOWN | MOUSEEVENTF_RIGHTUP;
 	}
+	if (state == 32)
+	{
+		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_MIDDLEDOWN | MOUSEEVENTF_MIDDLEUP;
+	}
+	if (state == 1024)
+	{
+		Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_WHEEL;
+		Input.mi.mouseData = WHEEL_PAGESCROLL * rolling * -1;
+	}
+	
 
 	
 
