@@ -5,11 +5,13 @@
 
 
 #include "stdafx.h"
+#include <iostream>
 #include <Windows.h>
 #include "atlimage.h"
 #include <vector>
-#include "dataStructs.h"
+#include "mouseDevice.h"
 #include <iostream>
+#include <Winuser.h>
 
 #include "interception.h"
 #include "utils.h"
@@ -23,17 +25,20 @@ using namespace Gdiplus;
 HWND                hWnd = NULL;
 HWND                hWnd2 = NULL;
 std::vector<mouseDevice> mouseDevices;
-int MouseCount = 0;
+int MouseCount = 1;
 
 
 INT WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow);
 void handleDevices(HINSTANCE);
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 void handleMouseEvent(int, int, short, short);
+bool checkIfInDisplayY(HWND hwnd, int x, int y);
+bool checkIfInDisplayX(HWND hwnd, int x, int y);
 int sum(int, int);
 
 int iWidth = 0;
 int iHeight = 0;
+int mouseCount = 0;
 
 struct ts {
 	int a, b;
@@ -50,7 +55,7 @@ VOID updateCurPosition(mouseDevice device) {
 	SetWindowPos(device.hWnd, HWND_TOPMOST, device.x, device.y, iWidth, iHeight, 0);
 }
 
-HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winName)
+HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winName, int id)
 {
 	WNDCLASS            wndClass;
 
@@ -67,7 +72,27 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	
 	RegisterClass(&wndClass);
 	CImage img;
-	img.Load(L"cursor3.png");
+	if (id == 1 || id == 0)
+	{
+		img.Load(L"Cursors/Purple.png");
+	}
+	else if (id == 2)
+	{
+		img.Load(L"Cursors/Red.png");
+	}
+	else if (id == 3)
+	{
+		img.Load(L"Cursors/Orange.png");
+	}
+	else if (id == 4)
+	{
+		img.Load(L"Cursors/Orange.png");
+	}
+	else if (id == 5)
+	{
+		img.Load(L"Cursors/Blue.png");
+	}
+	
 	
 	iWidth = img.GetWidth();
 	iHeight = img.GetHeight();
@@ -128,9 +153,10 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	return hWnd;
 }
 
-HWND AddMouse(HINSTANCE hInstance, InterceptionDevice device, int x, int y) {
+HWND AddMouse(HINSTANCE hInstance, InterceptionDevice device, int x, int y, int id) {
 	HWND hWnd = NULL;
-	hWnd = setCursor(hInstance, hWnd, TEXT("Mouse"), TEXT("Mouse")); // Cia tas +MouseCount neveikia reikia pataisyt lol
+	if(mouseDevices.size() != 0)
+		hWnd = setCursor(hInstance, hWnd, TEXT("Mouse"), TEXT("Mouse"), id);
 	mouseDevices.push_back(mouseDevice(hWnd, device, x, y));
 	MouseCount++;
 	return hWnd;
@@ -158,6 +184,77 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 
 	return msg.wParam;
 }
+
+bool isLeagalX(int x, int y, HWND hwnd) {
+	RECT display;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &display, 0);
+	
+	if (x <= display.right && x >= display.left)
+	{
+		return true;
+	}
+	return checkIfInDisplayX(hwnd, x, y);
+}
+
+bool isLeagalY(int x, int y, HWND hwnd) {
+	RECT display;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &display, 0);
+
+	if (y <= display.bottom + iHeight + 10 && y >= display.top)
+	{
+		return true;
+	}
+
+	return checkIfInDisplayY(hwnd, x, y);
+}
+
+bool checkIfInDisplayX(HWND hwnd, int x, int y) {
+	HWND op = hWnd;
+	SetWindowPos(hwnd, HWND_TOPMOST, x, y, iWidth, iHeight, 0);
+	HMONITOR otherMonitors;
+	MONITORINFO mi;
+	RECT prc;
+	RECT rc;
+	GetWindowRect(hwnd, &prc);
+	otherMonitors = MonitorFromRect(&prc, MONITOR_DEFAULTTONEAREST);
+	mi.cbSize = sizeof(mi);
+
+	GetMonitorInfo(otherMonitors, &mi);
+
+	rc = mi.rcWork;
+	
+	if (x <= rc.right && x >= rc.left)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool checkIfInDisplayY(HWND hwnd, int x, int y) {
+	HWND op = hWnd;
+	SetWindowPos(hwnd, HWND_TOPMOST, x, y, iWidth, iHeight, 0);
+	HMONITOR otherMonitors;
+	MONITORINFO mi;
+	RECT prc;
+	RECT rc;
+	GetWindowRect(hwnd, &prc);
+	otherMonitors = MonitorFromRect(&prc, MONITOR_DEFAULTTONEAREST);
+	mi.cbSize = sizeof(mi);
+
+	GetMonitorInfo(otherMonitors, &mi);
+
+	rc = mi.rcWork;
+	if (y <= rc.bottom + iHeight + 10 && y >= rc.top)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+
+
 void handleDevices(HINSTANCE hInstance) {
 	InterceptionContext context;
 	InterceptionDevice device;
@@ -173,15 +270,7 @@ void handleDevices(HINSTANCE hInstance) {
 
 	while (interception_receive(context, device = interception_wait(context), &stroke, 1) > 0)
 	{
-/*		if (interception_is_keyboard(device))
-		{
-			InterceptionKeyStroke &keystroke = *(InterceptionKeyStroke *)&stroke;
 
-			if (keystroke.code == ) break;
-
-			interception_send(context, device, &stroke, 1);
-		}
-*/
 		bool fnd = false;
 		if (interception_is_mouse(device))
 		{
@@ -189,21 +278,29 @@ void handleDevices(HINSTANCE hInstance) {
 
 
 			mouseDevice now = mouseDevice();
-			now.x = 123123;
-			//printf("%d", mouseDevices.size());
+
+			int index = 0;
 			for (int i = 0; i < mouseDevices.size(); i++) {
 				
 				if (mouseDevices[i].name == device) {
-
-					fnd = true;
-					mouseDevices[i].x += mousestroke.x;
-					mouseDevices[i].y += mousestroke.y;
+					
 					now = mouseDevices[i];
+					index = i;
+					fnd = true;
 
 					if (i == 0) continue;
+					
+
+					if (isLeagalX(mouseDevices[i].x + mousestroke.x, mouseDevices[i].y + mousestroke.y, mouseDevices[i].hWnd)) {
+						mouseDevices[i].x += mousestroke.x;
+					}
+					if (isLeagalY(mouseDevices[i].x + mousestroke.x, mouseDevices[i].y + mousestroke.y, mouseDevices[i].hWnd)) {
+						mouseDevices[i].y += mousestroke.y;
+					}
 
 					printf("uid: %d, x: %d, y : %d \n", i + 1, mouseDevices[i].x, mouseDevices[i].y);
 					printf("%d", mousestroke.rolling);
+
 					if (mousestroke.state == 2) {
 						handleMouseEvent(mouseDevices[i].x, mouseDevices[i].y, mousestroke.state, 0);
 					}
@@ -219,14 +316,17 @@ void handleDevices(HINSTANCE hInstance) {
 				}
 			}
 			if (!fnd) {
+				
 				fnd = false;
-				AddMouse(hInstance, device, mousestroke.x, mousestroke.y);
+				AddMouse(hInstance, device, mousestroke.x, mousestroke.y, mouseCount);
+				mouseCount++;
 			}
 			if (device == mouseDevices[0].name) {
 				interception_send(context, device, &stroke, 2);
 			}
 			else {
 				updateCurPosition(now);
+				//updateCursorPosition(now, mousestroke.x, mousestroke.y, index);
 			}
 		}
 
@@ -305,22 +405,3 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 } 
-
-/*LRESULT CALLBACK MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
-/*	if (nCode >= 0) {
-		MSLLHOOKSTRUCT * pMouseStruct = (MSLLHOOKSTRUCT *)lParam;
-		for (size_t i = 0; i < mouses.size(); i++) {		
-			if (i == 1) {
-				updateCurPosition(mouses.at(i), pMouseStruct->pt.x + 100, pMouseStruct->pt.y + 100);
-			}
-			else {
-				updateCurPosition(mouses.at(i), pMouseStruct->pt.x + 100, pMouseStruct->pt.y - 100);
-			}
-		}
-	}
-	
-	return CallNextHookEx(0, nCode, wParam, lParam);*/
-/*}
-
-/*HHOOK mousehook = SetWindowsHookEx(WH_MOUSE_LL, MouseHookProc, NULL, 0);*/
-

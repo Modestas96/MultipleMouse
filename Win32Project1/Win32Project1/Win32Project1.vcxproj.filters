@@ -30,7 +30,7 @@
     <ClInclude Include="Win32Project1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dataStructs.h">
+    <ClInclude Include="mouseDevice.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
