@@ -72,6 +72,7 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	
 	RegisterClass(&wndClass);
 	CImage img;
+	img.Destroy();
 	if (id == 1 || id == 0)
 	{
 		img.Load(L"Cursors/Purple.png");
@@ -98,7 +99,7 @@ HWND setCursor(HINSTANCE hInstance, HWND hWnd, LPCWSTR className, LPCWSTR winNam
 	iHeight = img.GetHeight();
 
 	hWnd = CreateWindowEx(
-		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT,
+		WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW,
 		className,   // window class name
 		winName,  // window caption
 		WS_POPUP | WS_VISIBLE | WS_SYSMENU,      // window style
@@ -164,12 +165,12 @@ HWND AddMouse(HINSTANCE hInstance, InterceptionDevice device, int x, int y, int 
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 {
-	// CIa kad console issoktu lol1!!
+	/*// CIa kad console issoktu lol1!!
 	AllocConsole();
 	freopen("CONIN$", "r", stdin);
 	freopen("CONOUT$", "w", stdout);
 	freopen("CONOUT$", "w", stderr);
-	printf("debug mode XD \n");
+	printf("debug mode XD \n");*/
 	///////
 	MSG                 msg;
 	
@@ -260,11 +261,9 @@ void handleDevices(HINSTANCE hInstance) {
 	InterceptionDevice device;
 	InterceptionStroke stroke;
 
-	//raise_process_priority();
 
 	context = interception_create_context();
 
-	//interception_set_filter(context, interception_is_keyboard, INTERCEPTION_FILTER_KEY_DOWN | INTERCEPTION_FILTER_KEY_UP);
 	interception_set_filter(context, interception_is_mouse, INTERCEPTION_FILTER_MOUSE_MOVE | INTERCEPTION_FILTER_MOUSE_ALL);
 	bool op = true;
 
@@ -326,7 +325,6 @@ void handleDevices(HINSTANCE hInstance) {
 			}
 			else {
 				updateCurPosition(now);
-				//updateCursorPosition(now, mousestroke.x, mousestroke.y, index);
 			}
 		}
 
@@ -342,8 +340,6 @@ void handleMouseEvent(int x, int y, short state, short rolling) {
 	const double XSCALEFACTOR = 65535 / (GetSystemMetrics(SM_CXSCREEN) - 1);
 	const double YSCALEFACTOR = 65535 / (GetSystemMetrics(SM_CYSCREEN) - 1);
 
-
-	//printf("metrics %d", GetSystemMetrics(SM_CXSCREEN) - 1);
 	printf("HEYYY %d %d", x, y);
 	printf("state %d \n", state);
 	INPUT Input = { 0 };
