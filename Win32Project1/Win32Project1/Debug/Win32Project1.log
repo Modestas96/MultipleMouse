@@ -1,2 +1,4 @@
-﻿  Win32Project1.vcxproj -> C:\Users\jurci\Desktop\MultipleMouse\Win32Project1\Debug\Win32Project1.exe
-  Win32Project1.vcxproj -> C:\Users\jurci\Desktop\MultipleMouse\Win32Project1\Debug\Win32Project1.pdb (Partial PDB)
+﻿  Validator.cpp
+c:\users\ka\multiplemouse\win32project1\win32project1\mousedevice.h(23): warning C4091: 'typedef ': ignored on left of 'mouseDevice' when no variable is declared
+  Win32Project1.vcxproj -> C:\Users\ka\MultipleMouse\Win32Project1\Debug\Win32Project1.exe
+  Win32Project1.vcxproj -> C:\Users\ka\MultipleMouse\Win32Project1\Debug\Win32Project1.pdb (Partial PDB)

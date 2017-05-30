@@ -1,0 +1,4 @@
+﻿  unittest1.cpp
+c:\users\ka\multiplemouse\win32project1\unittest1\unittest1.cpp(14): error C2039: 'isLeagalX': is not a member of 'Microsoft::VisualStudio::CppUnitTestFramework::Assert'
+  c:\program files (x86)\microsoft visual studio\2017\community\vc\auxiliary\vs\unittest\include\cppunittestassert.h(121): note: see declaration of 'Microsoft::VisualStudio::CppUnitTestFramework::Assert'
+c:\users\ka\multiplemouse\win32project1\unittest1\unittest1.cpp(14): error C3861: 'isLeagalX': identifier not found

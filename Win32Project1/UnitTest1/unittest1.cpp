@@ -1,7 +1,5 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
-#include "Resource.h"
-#include "Win32Project1.cpp"
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTest1
@@ -13,7 +11,7 @@ namespace UnitTest1
 		TEST_METHOD(sum)
 		{
 			// TODO: Your test code here
-			Assert::AreEqual(1, 1);
+			Assert::isLeagalX(1, 1);
 		}
 
 	};

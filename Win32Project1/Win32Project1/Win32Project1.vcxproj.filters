@@ -41,6 +41,12 @@
     <ClCompile Include="Win32Project1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Validator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ScreenStruct.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Win32Project1.rc">

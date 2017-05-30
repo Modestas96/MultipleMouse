@@ -43,13 +43,6 @@ int mouseCount = 0;
 struct ts {
 	int a, b;
 };
-
-int sum(ts s) {
-	return s.a + s.b;
-}
-int sum(int a) {
-	return a;
-}
 VOID updateCurPosition(mouseDevice device) {
 	//printf("%s", device.name);
 	SetWindowPos(device.hWnd, HWND_TOPMOST, device.x, device.y, iWidth, iHeight, 0);
@@ -184,6 +177,28 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 	}
 
 	return msg.wParam;
+}
+
+bool okX(int x, int y) {
+	RECT display;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &display, 0);
+
+	if (x <= display.right && x >= display.left)
+	{
+		return true;
+	}
+	return false;
+}
+
+bool okY(int x, int y) {
+	RECT display;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &display, 0);
+
+	if (x <= display.right && x >= display.left)
+	{
+		return true;
+	}
+	return false;
 }
 
 bool isLeagalX(int x, int y, HWND hwnd) {

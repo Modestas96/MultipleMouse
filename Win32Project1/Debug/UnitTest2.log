@@ -1,0 +1,4 @@
+﻿  unittest1.cpp
+c:\users\ka\multiplemouse\win32project1\win32project1\mousedevice.h(23): warning C4091: 'typedef ': ignored on left of 'mouseDevice' when no variable is declared
+  UnitTest2.vcxproj -> C:\Users\ka\MultipleMouse\Win32Project1\Debug\UnitTest2.dll
+  UnitTest2.vcxproj -> C:\Users\ka\MultipleMouse\Win32Project1\Debug\UnitTest2.pdb (Partial PDB)
